@@ -40,6 +40,12 @@ FROM bytecodex/bytekot-painter:v1.0.0 as bytekot-painter
 
 #### Шаги
 
+0. Сфетчите гитовые сабмодули
+
+```shell
+git submodule init && git submodule update
+```
+
 1. Сгенерируем antlr лексер и парсер
 
 ```shell

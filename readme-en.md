@@ -40,6 +40,12 @@ FROM bytecodex/bytekot-painter:v1.0.0 as bytekot-painter
 
 #### Steps
 
+0. Fetch git submodules
+
+```shell
+git submodule init && git submodule update
+```
+
 1. We'll generate the antlr lexer and parser
 
 ```shell
