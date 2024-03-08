@@ -4,7 +4,7 @@ ARG RUST_VERSION=1.76.0
 ARG APP_NAME=bytekot-painter
 ARG ARTIFACT_NAME=bytekot_painter
 
-FROM openjdk:21 as antlr-build
+FROM openjdk:21 AS antlr-build
 WORKDIR /lexer
 COPY rust-antlr.jar ./
 COPY antlr/JBytecodeLexer.g4 antlr/JBytecodeParser.g4 ./
@@ -26,10 +26,10 @@ RUN --mount=type=cache,target=/lib/target/,id=rust-cache-${APP_NAME}-${TARGETPLA
     <<EOF
 set -e
 cargo build --locked --release --target-dir ./target && \
-cp ./target/release/lib$ARTIFACT_NAME.a /bin/lib$ARTIFACT_NAME.a
+cp ./target/release/lib${ARTIFACT_NAME}.a /bin/lib${ARTIFACT_NAME}.a
 EOF
 
-FROM busybox as final
+FROM scratch AS final
 ARG ARTIFACT_NAME
 COPY --from=build /bin/lib$ARTIFACT_NAME.a /lib$ARTIFACT_NAME.a
 
