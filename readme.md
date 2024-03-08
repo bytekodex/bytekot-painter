@@ -1,5 +1,9 @@
 # Bytekot painter
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bytekodex_bytekot-painter&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=bytekodex_bytekot-painter)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=bytekodex_bytekot-painter&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=bytekodex_bytekot-painter)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=bytekodex_bytekot-painter&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=bytekodex_bytekot-painter)
+
 Библиотека-художник изображений для bytekot телеграм бота, для генерации изображения из текстового представления байткода с подсветкой.
 Так же планируется использование в javap-viewer.
 
