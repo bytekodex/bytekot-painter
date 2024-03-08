@@ -24,13 +24,13 @@
 Готовый образ (`linux/amd64`) доступен в официальном docker hub по имени `bytecodex/bytekot-painter`
 
 ```shell
-docker push bytecodex/bytekot-painter:v1.0.0
+docker push bytecodex/bytekot-painter:v1.0.1
 ```
 
 Для multi-stage сборки, аналогичным образом (он содержит только файл статической библиотеки)
 
 ```dockerfile
-FROM bytecodex/bytekot-painter:v1.0.0 as bytekot-painter
+FROM bytecodex/bytekot-painter:v1.0.1 as bytekot-painter
 ```
 
 ## Сборка
@@ -69,7 +69,7 @@ cargo build --release
 ![](/nothing/docker-meme.jpg)
 
 ```shell
-docker build -t bytecodex/bytekot-painter:v1.0.0 .
+docker build -t bytecodex/bytekot-painter:v1.0.1 .
 ```
 
 ## Пример результата
@@ -80,9 +80,19 @@ docker build -t bytecodex/bytekot-painter:v1.0.0 .
 
 ![](/nothing/snapshot-result.png)
 
+## Варианты ошибок
+
+| Ключ                     | Описание                                                                             |
+|--------------------------|--------------------------------------------------------------------------------------|
+| `too-large-image`        | Изображение слишком большое (высота больше `8192` или `height * width` > `27852800`) |
+| `image-encoding-failure` | Не удалось создать растеризатор                                                      |
+| `file-creation-failure`  | Не удалось создать файл                                                              |
+| `file-writing-failure`   | Не удалось записать в файл                                                           |
+
 ## Использованные технологии
 
-- [Rust](https://github.com/rust-lang/rust), лицензирован с [MIT](https://github.com/rust-lang/log/blob/master/LICENSE-MIT) и [Apache 2.0](https://github.com/rust-lang/log/blob/master/LICENSE-APACHE)
+- [Rust](https://github.com/rust-lang/rust), лицензирован с [MIT](https://github.com/rust-lang/log/blob/master/LICENSE-MIT)
+  и [Apache 2.0](https://github.com/rust-lang/log/blob/master/LICENSE-APACHE)
 - [Antlr4](https://github.com/antlr/antlr4), лицензирован с [BSD 3](https://github.com/antlr/antlr4/blob/dev/LICENSE.txt)
 - [Skia](https://github.com/google/skia), лицензирован с [BSD 3](https://github.com/google/skia/blob/main/LICENSE)
 - [Jetbrains AI](https://www.jetbrains.com/ai/), использован для названий коммитов

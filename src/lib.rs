@@ -40,6 +40,7 @@ const BACKGROUND_COLOR: Color = Color::from_rgb(30, 30, 30);
 const FONTS: [&str; 1] = ["Fira code"];
 const INITIAL_FONT_SIZE: f32 = 40.0;
 
+const MAX_WIDTH: f32 = 3400.0;
 const MAX_HEIGHT: f32 = 2560.0 * 3.2;
 
 const CORNER_RADII: f32 = 20.0;
@@ -97,7 +98,7 @@ pub extern "C" fn paint(input: *const c_char, path: *const c_char) -> *const c_c
 
   log::info!("ℹ️ [{}] Paragraph canvas created (width x height): ({} x {})", path, width, height);
 
-  if height >= MAX_HEIGHT || (height * width > 3400.0 * MAX_HEIGHT) {
+  if height >= MAX_HEIGHT || (height * width > MAX_WIDTH * MAX_HEIGHT) {
     return CString::new("too-large-image").unwrap().into_raw();
   }
 
@@ -141,7 +142,7 @@ pub extern "C" fn paint(input: *const c_char, path: *const c_char) -> *const c_c
       log::info!("ℹ️ [{}] Success, image exported as {}", path, imgpath);
       cstr(imgpath)
     }
-    Err(_) => cstr("file-creation-failure")
+    Err(_) => cstr("file-writing-failure")
   };
 }
 
