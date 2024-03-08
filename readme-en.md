@@ -7,7 +7,7 @@
 An image-painting library for the Bytekot Telegram bot designed to generate images from textual representations of bytecode with highlighting.
 It is also planned to be used in javap-viewer.
 
-The concept is straightforward: the library, for now, exposes a single method, `paint`, which accepts two arguments, "C-strings", `input` and `path`.
+The concept is straightforward: the library, for now, exposes a single method, `paint` (and `free_paint`), which accepts two arguments, "C-strings", `input` and `path`.
 The former is the actual JVM bytecode, while the latter is the path where the image will be saved (depending on the operating system, relative and absolute paths depend on a
 forward slash or dot with a forward slash).
 
