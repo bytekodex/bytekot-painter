@@ -74,7 +74,7 @@ docker build -t bytecodex/bytekot-painter:v1.0.0 .
 
 ## Example of result
 
-Input parameters: Bytecode of `java.util.jar.JarEntry` gathered from `javap`.
+Input parameters: Bytecode of `java.util.jar.JarEntry` gathered from `javap` with `-c` argument.
 
 Result:
 

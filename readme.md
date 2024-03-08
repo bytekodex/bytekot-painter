@@ -74,7 +74,7 @@ docker build -t bytecodex/bytekot-painter:v1.0.0 .
 
 ## Пример результата
 
-Входные параметры: Байткод `java.util.jar.JarEntry` полученный с `javap`.
+Входные параметры: Байткод `java.util.jar.JarEntry` полученный с `javap` с аргументом `-c`.
 
 Результат:
 
