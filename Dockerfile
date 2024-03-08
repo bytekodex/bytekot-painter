@@ -31,5 +31,7 @@ EOF
 
 FROM scratch AS final
 ARG ARTIFACT_NAME
+COPY --from=0 /etc/passwd /etc/passwd
+USER defaultusr
 COPY --from=build /bin/lib$ARTIFACT_NAME.a /lib$ARTIFACT_NAME.a
 
