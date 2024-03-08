@@ -72,6 +72,14 @@ cargo build --release
 docker build -t bytecodex/bytekot-painter:v1.0.0 .
 ```
 
+## Example of result
+
+Input parameters: Bytecode of `java.util.jar.JarEntry` gathered from `javap`.
+
+Result:
+
+![](/nothing/snapshot-result.png)
+
 ## Used technologies
 
 - [Rust](https://github.com/rust-lang/rust), licensed with [MIT](https://github.com/rust-lang/log/blob/master/LICENSE-MIT) and [Apache 2.0](https://github.com/rust-lang/log/blob/master/LICENSE-APACHE)
