@@ -16,7 +16,6 @@ use skia_safe::textlayout::{FontCollection, ParagraphBuilder, ParagraphStyle, Te
 use antlr::jbytecodelexer::{BytecodeAccFlag, BytecodeConstantPoolTag, BytecodeDescriptor, BytecodeInstr, BytecodeKeyword, BytecodeLiterals, BytecodeMethodReference, BytecodeNumber, BytecodePrimitive, BytecodeSignature, FilePathIdentifier, QualifiedIdentifier, SlCommentLiteral, SpecialPrimitives, StringLiteral};
 
 use crate::antlr::jbytecodelexer::JBytecodeLexer;
-use crate::Status::Success;
 
 mod antlr;
 
