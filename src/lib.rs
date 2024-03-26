@@ -1,10 +1,9 @@
+use std::ffi::{c_int, c_uchar};
 #[allow(non_upper_case_globals)]
-
-use std::ffi::{CStr, CString};
-use std::fs::File;
+use std::ffi::CStr;
 use std::io::Write;
 use std::os::raw::c_char;
-use std::time::Instant;
+use std::ptr::null;
 
 use antlr_rust::InputStream;
 use antlr_rust::int_stream::IntStream;
@@ -15,7 +14,9 @@ use skia_safe::{ClipOp, Color, EncodedImageFormat, FontMgr, Point, Rect, RRect, 
 use skia_safe::textlayout::{FontCollection, ParagraphBuilder, ParagraphStyle, TextStyle};
 
 use antlr::jbytecodelexer::{BytecodeAccFlag, BytecodeConstantPoolTag, BytecodeDescriptor, BytecodeInstr, BytecodeKeyword, BytecodeLiterals, BytecodeMethodReference, BytecodeNumber, BytecodePrimitive, BytecodeSignature, FilePathIdentifier, QualifiedIdentifier, SlCommentLiteral, SpecialPrimitives, StringLiteral};
+
 use crate::antlr::jbytecodelexer::JBytecodeLexer;
+use crate::Status::Success;
 
 mod antlr;
 
@@ -48,12 +49,21 @@ const MARGIN: i32 = 32;
 
 const CORNERS: Point = Vector::new(CORNER_RADII, CORNER_RADII);
 
-#[no_mangle]
-pub extern "C" fn paint(input: *const c_char, path: *const c_char) -> *const c_char {
-  let input = unsafe { CStr::from_ptr(input).to_str().unwrap() };
-  let path = unsafe { CStr::from_ptr(path).to_str().unwrap() };
+const ERR_SUCCESS: i32 = 0;
+const ERR_TOO_LARGE_IMAGE: i32 = -1;
+const ERR_RASTER_CREATION_FAILURE: i32 = -2;
+const ERR_IMAGE_ENCODING_FAILURE: i32 = -3;
 
-  log::info!("ℹ️ [{}] Starting painting with text length: {}", path, input.len());
+#[repr(C)]
+pub struct ImageResult {
+  data: *const c_uchar,
+  len: usize,
+  status: c_int,
+}
+
+#[no_mangle]
+pub extern "C" fn paint(input: *const c_char) -> ImageResult {
+  let input = unsafe { CStr::from_ptr(input).to_str().unwrap() };
 
   let mut paragraph_style = ParagraphStyle::new();
   let mut font_collection = FontCollection::new();
@@ -68,11 +78,6 @@ pub extern "C" fn paint(input: *const c_char, path: *const c_char) -> *const c_c
   paragraph_style.set_text_style(&default_text_style);
 
   let mut paragraph_builder = ParagraphBuilder::new(&paragraph_style, font_collection);
-
-  log::info!("ℹ️ [{}] Paragraph style applied, now lex it!", path);
-
-  let start = Instant::now();
-
   let mut lexer = JBytecodeLexer::new(InputStream::new(&*input));
   let mut token_source = UnbufferedTokenStream::new_unbuffered(&mut lexer);
   while token_source.la(1) != TOKEN_EOF {
@@ -85,30 +90,21 @@ pub extern "C" fn paint(input: *const c_char, path: *const c_char) -> *const c_c
   }
   paragraph_builder.pop();
 
-  let duration = start.elapsed();
-
-  log::info!("ℹ️ [{}] Lexing done in {}ms", path, duration.as_millis());
-
   let mut paragraph = paragraph_builder.build();
   paragraph.layout(0 as scalar); // Measure as small as we can.
   paragraph.layout(paragraph.max_intrinsic_width() as scalar); // So, we get some intrinsic width, use it.
 
   let width = paragraph.max_intrinsic_width();
   let height = paragraph.height();
-
-  log::info!("ℹ️ [{}] Paragraph canvas created (width x height): ({} x {})", path, width, height);
-
   if height >= MAX_HEIGHT || (height * width > MAX_WIDTH * MAX_HEIGHT) {
-    return CString::new("too-large-image").unwrap().into_raw();
+    return ImageResult { data: null(), len: 0, status: ERR_TOO_LARGE_IMAGE };
   }
 
   let cm_width = width.ceil() as i32 + (MARGIN * 2);
   let cm_height = height.ceil() as i32 + (MARGIN * 2);
-
-  log::info!("ℹ️ [{}] Creating raster with sizes (width x height): ({} x {})", path, cm_width, cm_height);
   let mut surface = match surfaces::raster_n32_premul((cm_width, cm_height)) {
     Some(surface) => surface,
-    None => return cstr("raster-creation-failure"),
+    None => return ImageResult { data: null(), len: 0, status: ERR_RASTER_CREATION_FAILURE }
   };
 
   let canvas = surface.canvas();
@@ -121,40 +117,22 @@ pub extern "C" fn paint(input: *const c_char, path: *const c_char) -> *const c_c
 
   paragraph.paint(canvas, (MARGIN, MARGIN));
 
-  log::info!("ℹ️ [{}] Snapshotting image from canvas", path);
-
   let snapshot = surface.image_snapshot();
   let image = match snapshot.encode(surface.direct_context().as_mut(), EncodedImageFormat::PNG, None) {
     Some(image) => image,
-    None => return cstr("image-encoding-failure"),
+    None => return ImageResult { data: null(), len: 0, status: ERR_IMAGE_ENCODING_FAILURE }
   };
 
-  let filepath = format!("{}.png", path);
-  let mut file = match File::create(filepath.clone()) {
-    Ok(file) => file,
-    Err(_) => return cstr("file-creation-failure"),
-  };
-
-  let bytes = image.as_bytes();
-  return match file.write_all(bytes) {
-    Ok(_) => {
-      let imgpath = filepath.as_str();
-      log::info!("ℹ️ [{}] Success, image exported as {}", path, imgpath);
-      cstr(imgpath)
-    }
-    Err(_) => cstr("file-writing-failure")
-  };
-}
-
-#[inline]
-fn cstr(input: &str) -> *const c_char {
-  return CString::new(input).unwrap().into_raw();
+  let image_bytes = image.as_bytes();
+  std::mem::forget(image_bytes);
+  return ImageResult { data: image_bytes.as_ptr(), len: image_bytes.len(), status: ERR_SUCCESS };
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn free_paint(s: *mut c_char) {
-  if s.is_null() { return; }
-  let _ = CString::from_raw(s);
+pub extern "C" fn free_image_data(ptr: *mut c_uchar, len: usize) {
+  unsafe {
+    let _ = Vec::from_raw_parts(ptr, len, len);
+  }
 }
 
 fn categorize_token_type(token: isize) -> isize {
