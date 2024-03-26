@@ -27,16 +27,15 @@ RUN --mount=type=cache,target=/lib/target/,id=rust-cache-${APP_NAME}-${TARGETPLA
 set -e
 cargo install cbindgen && \
 cargo build --locked --release --target-dir ./target && \
-cbindgen --crate ${APP_NAME} --output ${APP_NAME}.h && \
+cbindgen --crate ${APP_NAME} --output ${ARTIFACT_NAME}.h && \
 cp ./target/release/lib${ARTIFACT_NAME}.a /bin/lib${ARTIFACT_NAME}.a && \
-cp ./${APP_NAME}.h /bin/${APP_NAME}.h
+cp ./${ARTIFACT_NAME}.h /bin/${ARTIFACT_NAME}.h
 EOF
 
 FROM scratch AS final
 ARG ARTIFACT_NAME
-ARG APP_NAME
 COPY --from=0 /etc/passwd /etc/passwd
 USER defaultusr
 COPY --from=build /bin/lib$ARTIFACT_NAME.a /lib$ARTIFACT_NAME.a
-COPY --from=build /bin/$APP_NAME.h /$APP_NAME.h
+COPY --from=build /bin/$ARTIFACT_NAME.h /$ARTIFACT_NAME.h
 
