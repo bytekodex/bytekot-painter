@@ -16,7 +16,7 @@ ARG ARTIFACT_NAME
 WORKDIR /lib
 
 COPY --from=antlr-build /src/antlr/ ./src/antlr/
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml Cargo.lock cbindgen.toml ./
 COPY src ./src
 COPY . .
 
@@ -27,8 +27,8 @@ RUN --mount=type=cache,target=/lib/target/,id=rust-cache-${APP_NAME}-${TARGETPLA
 set -e
 cargo install cbindgen && \
 cargo build --locked --release --target-dir ./target && \
-cbindgen --crate ${APP_NAME} --output ${ARTIFACT_NAME}.h && \
-cp ./target/release/lib${ARTIFACT_NAME}.a /bin/lib${ARTIFACT_NAME}.a && \
+cbindgen --config cbindgen.toml --crate ${APP_NAME} --output ${ARTIFACT_NAME}.h && \
+cp ./target/release/lib${ARTIFACT_NAME}.so /bin/lib${ARTIFACT_NAME}.so && \
 cp ./${ARTIFACT_NAME}.h /bin/${ARTIFACT_NAME}.h
 EOF
 
@@ -36,6 +36,6 @@ FROM scratch AS final
 ARG ARTIFACT_NAME
 COPY --from=0 /etc/passwd /etc/passwd
 USER defaultusr
-COPY --from=build /bin/lib$ARTIFACT_NAME.a /lib$ARTIFACT_NAME.a
+COPY --from=build /bin/lib$ARTIFACT_NAME.so /lib$ARTIFACT_NAME.so
 COPY --from=build /bin/$ARTIFACT_NAME.h /$ARTIFACT_NAME.h
 
