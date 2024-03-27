@@ -22,13 +22,13 @@
 Готовый образ (`linux/amd64`) доступен в официальном docker hub по имени `bytecodex/bytekot-painter`
 
 ```shell
-docker push bytecodex/bytekot-painter:v1.1.2
+docker push bytecodex/bytekot-painter:v1.1.3
 ```
 
 Для multi-stage сборки, аналогичным образом (он содержит только файл статической библиотеки)
 
 ```dockerfile
-FROM bytecodex/bytekot-painter:v1.1.2 as bytekot-painter
+FROM bytecodex/bytekot-painter:v1.1.3 as bytekot-painter
 ```
 
 ## Сборка
@@ -67,7 +67,7 @@ cargo build --release
 ![](/nothing/docker-meme.jpg)
 
 ```shell
-docker build -t bytecodex/bytekot-painter:v1.0.1 .
+docker build -t bytecodex/bytekot-painter:v1.1.3 .
 ```
 
 ## Пример результата
