@@ -24,7 +24,7 @@ The ready-made image (`linux/amd64`) is available on the official Docker Hub und
 docker push bytecodex/bytekot-painter:v1.1.3
 ```
 
-For multi-stage builds, in a similar manner (it contains only the static library file)
+For multi-stage builds, in a similar manner (it contains only the dynamic library file and header file (`bytekot_painter.dll/so`,`bytekot_painter.h`))
 
 ```dockerfile
 FROM bytecodex/bytekot-painter:v1.1.3 as bytekot-painter

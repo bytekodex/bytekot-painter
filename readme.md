@@ -23,7 +23,7 @@
 docker push bytecodex/bytekot-painter:v1.1.3
 ```
 
-Для multi-stage сборки, аналогичным образом (он содержит только файл статической библиотеки)
+Для multi-stage сборки, аналогичным образом (он содержит только файл динамической библиотеки и заголовочный файл (`bytekot_painter.dll/so`,`bytekot_painter.h`))
 
 ```dockerfile
 FROM bytecodex/bytekot-painter:v1.1.3 as bytekot-painter
