@@ -49,7 +49,7 @@ git submodule init && git submodule update
 1. Сгенерируем antlr лексер и парсер
 
 ```shell
-java -jar rust-antlr.jar -Dlanguage=Rust antlr/JBytecodeParser.g4 antlr/JBytecodeLexer.g4 -o /src/antlr/
+java -jar rust-antlr.jar -Dlanguage=Rust antlr/JBytecodeParser.g4 antlr/JBytecodeLexer.g4 -o ./src/antlr/
 ```
 
 2. Соберем библиотеку (по умолчанию генерируется динамическая библиотека `.dll` на винде и `.so` на linux)
