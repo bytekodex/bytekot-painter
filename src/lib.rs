@@ -122,9 +122,12 @@ pub extern "C" fn paint(input: *const c_char) -> ImageResult {
     None => return ImageResult { data: null(), len: 0, status: ERR_IMAGE_ENCODING_FAILURE }
   };
 
-  let image_bytes = image.as_bytes();
+  let image_bytes = image.as_bytes().to_vec();
+  let len = image_bytes.len();
+  let ptr = image_bytes.as_ptr();
   std::mem::forget(image_bytes);
-  return ImageResult { data: image_bytes.as_ptr(), len: image_bytes.len(), status: ERR_SUCCESS };
+
+  return ImageResult { data: ptr, len, status: ERR_SUCCESS };
 }
 
 #[no_mangle]
