@@ -7,13 +7,9 @@
 An image-painting library for the Bytekot Telegram bot designed to generate images from textual representations of bytecode with highlighting.
 It is also planned to be used in javap-viewer.
 
-The concept is straightforward: the library, for now, exposes a single method, `paint` (and `free_paint`), which accepts two arguments, "C-strings", `input` and `path`.
+The concept is straightforward: the library, for now, exposes a single method, `paint` (and `free_image_data`), which accepts one argument, "C-string", `input` and returns struct with data.
 The former is the actual JVM bytecode, while the latter is the path where the image will be saved (depending on the operating system, relative and absolute paths depend on a
 forward slash or dot with a forward slash).
-
-After the image is saved, the library returns control with a C-style string (either the path to the image or a text error).
-
-In the future, I plan to change the interface to return an integer code for errors. (PRs are welcome)
 
 ## Bugs and improvements
 
@@ -25,13 +21,13 @@ In the future, I plan to change the interface to return an integer code for erro
 The ready-made image (`linux/amd64`) is available on the official Docker Hub under the name `bytecodex/bytekot-painter`
 
 ```shell
-docker push bytecodex/bytekot-painter:v1.0.1
+docker push bytecodex/bytekot-painter:v1.1.3
 ```
 
 For multi-stage builds, in a similar manner (it contains only the static library file)
 
 ```dockerfile
-FROM bytecodex/bytekot-painter:v1.0.1 as bytekot-painter
+FROM bytecodex/bytekot-painter:v1.1.3 as bytekot-painter
 ```
 
 ## Build
@@ -57,20 +53,20 @@ git submodule init && git submodule update
 java -jar rust-antlr.jar -Dlanguage=Rust antlr/JBytecodeParser.g4 antlr/JBytecodeLexer.g4 -o /src/antlr/
 ```
 
-2. We'll compile the library (by default, a static library `.lib` on Windows and `.a` on Linux is generated)
+2. We'll compile the library (by default, a dynamic library `.dll` on Windows and `.so` on Linux is generated)
 
 ```shell
 cargo build --release
 ```
 
-3. The compiled library will be in `./target/release` named `bytekot_painter.lib` or on Linux `libbytekot_painter.a`.
+3. The compiled library will be in `./target/release` named `bytekot_painter.dll` or on Linux `libbytekot_painter.so`.
 
 ### Docker
 
 ![](/nothing/docker-meme.jpg)
 
 ```shell
-docker build -t bytecodex/bytekot-painter:v1.0.1 .
+docker build -t bytecodex/bytekot-painter:v1.1.3 .
 ```
 
 ## Example of result
@@ -81,14 +77,40 @@ Result:
 
 ![](/nothing/snapshot-result.png)
 
-## Errors which can be returned
+## API
 
-| Key                      | Description                                                                   |
-|--------------------------|-------------------------------------------------------------------------------|
-| `too-large-image`        | Image too large (height greater than `8192` or `height * width` > `27852800`) |
-| `image-encoding-failure` | Can't create rasterizer                                                       |
-| `file-creation-failure`  | Can't create file                                                             |
-| `file-writing-failure`   | Can't write to file                                                           |
+The API of the library is very simple, just two functions, here's the header for clarity.
+
+```c
+typedef struct ImageResult {
+  const unsigned char *data;
+  uintptr_t len;
+  int status;
+} ImageResult;
+
+struct ImageResult paint(const char *input);
+
+void free_image_data(unsigned char *ptr, uintptr_t len);
+```
+
+The `paint` function takes a regular C string with bytecode for processing and always returns an `ImageResult` struct.
+
+`data` is a pointer to the array data, which can subsequently be written to a file; this array of bytes is in `PNG` format.
+
+`len` is the length of the array.
+
+`status` is the status of the operation, with error codes presented below:
+
+```rust
+const ERR_SUCCESS: i32 = 0;
+const ERR_TOO_LARGE_IMAGE: i32 = -1;
+const ERR_RASTER_CREATION_FAILURE: i32 = -2;
+const ERR_IMAGE_ENCODING_FAILURE: i32 = -3;
+```
+
+_Note, `ERR_TOO_LARGE_IMAGE` returns only if height greater than `8192` or `height * width` > `27852800`._
+
+Accordingly, to avoid creating a memory leak, there is a `free_image_data` function that takes a pointer to the array and its length.
 
 ## Used technologies
 
